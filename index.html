@@ -1,0 +1,142 @@
+
+<!--
+Sample code for Forte.JS is provided on an AS-IS basis with no usability warranties, implicit or explicitly stated. All values in the example are fictional and exist only in realm of the author's imagination.  Forte Payment Systems will not archive, maintain, support, nor update this sample code.
+
+1.  The sample code requires you to include your own jquery library.  If needed, some versions are
+available to download from http://jquery.com/download/
+
+2.  Add the following Forte.js references to the <head> tag of your pay method entry form
+       test environment: <script type="text/javascript" src="https://sandbox.forte.net/api/js/v1"></script>
+       live environment: <script type="text/javascript" src="https://api.forte.net/js/v1"></script>
+
+3.  Replace the api_login_id value as appropriate to your merchant account and environment to where
+		data will be submitted
+
+3.  Forte.js API documentation is available by visiting: https://www.forte.net/devdocs/forte.js/forte.js.htm
+-->
+<html>
+<head>
+<script type='text/javascript' src='https://code.jquery.com/jquery-3.4.1.min.js'></script>
+<script type='text/javascript' src='https://sandbox.forte.net/api/js/v1'></script>
+
+<script type="text/javascript">
+	function onTokenCreated(response) {
+         //do real transaction here by using the onetime_token
+         alert(response.card_category);
+		 
+		 alert("The onetime_token created -> {" + "event: " + response.event + "," +
+		                                       " request_id: " + response.request_id + "," +
+											   " card_type: " + response.card_type + "," +
+											   " expire_year: " + response.expire_year + "," +
+											   " expire_month: " + response.expire_month + "," +
+											   " onetime_token (the onetime_token created): " + response.onetime_token + "," +
+											   " last_4: " + response.last_4 + "," +
+											   " response_code: " + response.response_code + "," +
+											   " card_category: " + response.card_category + "," +
+											   " response_description: " + response.response_description + "}");
+		 
+		  document.getElementById('one_time_token').value=response.onetime_token;		 
+      }
+      function onTokenFailed(response) {
+         //handle error here
+         $("#one_time_token").val("");
+		 
+		 alert("Getting onetime_token failed: " + response.response_code + ":" + response.response_description);
+      }
+</script>
+	
+<script>
+	$(document).ready(function()
+	{
+		$("#content").append("<p>The page just loaded</p>");
+		
+		$('button[type=submit]').on('click', on_form_submit_button_click);
+		$("#btn_reset_cc_fields").on('click', on_btn_reset_cc_fields_click);
+		$("#btn_prefill_cc_fields").on('click', on_btn_prefill_cc_fields_click);
+		$("#btn_reset_echeck_fields").on('click', on_btn_reset_echeck_fields_click);
+		$("#btn_prefill_echeck_fields").on('click', on_btn_prefill_echeck_fields_click);
+	});
+	
+	function on_form_submit_button_click(evt) 
+	{
+		var data =
+		{
+			api_login_id: 'vU4TilFBD',
+			card_number: $('#cc_card_number').val(),
+			expire_month: $('#cc_expire_month').val(),
+			expire_year: $('#cc_expire_year').val(),
+			cvv: $('#cc_cvv_cvv2').val(),
+			account_number: $('#echeck_account_number').val(),
+			routing_number: $('#echeck_routing_number').val(),
+			account_type: $('#echeck_account_type').val()				
+		}
+		forte.createToken(data)
+			.success(onTokenCreated)
+			.error(onTokenFailed);
+		return false;
+	};		
+	
+	function on_btn_reset_cc_fields_click(evt)
+	{
+		$("#cc_card_number").val("");
+		$("#cc_expire_year").val("");
+		$("#cc_cvv_cvv2").val("");
+	};
+	
+	function on_btn_prefill_cc_fields_click(evt)
+	{
+		$("#cc_card_number").val("5454545454545454");
+		$("#cc_expire_year").val("2027");
+		$("#cc_cvv_cvv2").val("123");
+	};
+	
+	function on_btn_reset_echeck_fields_click(evt)
+	{
+		
+		$("#echeck_account_number").val("");
+		$("#echeck_routing_number").val("");
+		$("#echeck_account_type").val("");
+	};
+	
+	function on_btn_prefill_echeck_fields_click(evt)
+	{
+		$("#echeck_account_number").val("12345");
+		$("#echeck_routing_number").val("021000021");
+		$("#echeck_account_type").val("s");
+	};
+	
+	</script>
+
+</head>
+<body>
+<button id="btn_reset_cc_fields">Reset CC fields</button><button id="btn_prefill_cc_fields">Prefill CC fields</button><h1>Credit Card</h1>
+Credit Card Number: <input type='text' id='cc_card_number' /><br/>
+Credit Card Expiration Month: <select type='text' id='cc_expire_month' />
+	  <option value="1">Jan - 1</option>
+      <option value="2">Feb - 2</option>
+      <option value="3" selected >Mar - 3</option>
+      <option value="4">Apr - 4</option>
+      <option value="5">May - 5</option>
+      <option value="6">Jun - 6</option>
+      <option value="7">Jul - 7</option>
+      <option value="8">Aug - 8</option>
+      <option value="9">Sep - 9</option>
+      <option value="10">Oct - 10</option>
+      <option value="11">Nov - 11</option>
+      <option value="12">Dec - 12</option>
+	</select><br/>
+Credit Card Expiration Year: <input type='text' id='cc_expire_year' /><br/>
+Credit Card CVV/CVV2: <input type='text' id='cc_cvv_cvv2' /><br/>
+<br/>
+<button id="btn_reset_echeck_fields">Reset eCheck fields</button><button id="btn_prefill_echeck_fields">Prefill eCheck fields</button><h1>eCheck</h1>
+eCheck Account Number: <input type='text' id='echeck_account_number' /><br/>
+eCheck Routing Number: <input type='text' id='echeck_routing_number' /><br/>
+eCheck Account Type: <input type='text' id='echeck_account_type' /><br/>
+<br />
+<button height='40' width='40' type='submit' id='form_submit'>Submit</button>
+
+<br/><br/>
+<h1>One-time-token: </h1><input type='text' id='one_time_token' readonly size='50'><br/>
+
+</body>
+</html>
